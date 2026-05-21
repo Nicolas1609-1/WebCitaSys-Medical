@@ -51,7 +51,64 @@
         </div>
 
         <!-- Form Section -->
-        <form action="{{ route('register') }}" method="POST" class="p-8 space-y-4">
+        <form action="{{ route('register') }}" method="POST" novalidate
+              x-data="{
+                  errors: { first_name: '', last_name: '', specialty: '', email: '', password: '' },
+                  showPass: false,
+                  showConfirm: false,
+                  validateForm(e) {
+                      let hasError = false;
+                      this.errors = { first_name: '', last_name: '', specialty: '', email: '', password: '' };
+                      
+                      const first_name = document.getElementById('first_name').value.trim();
+                      if (!first_name) {
+                          this.errors.first_name = 'El nombre es obligatorio.';
+                          hasError = true;
+                      }
+                      
+                      const last_name = document.getElementById('last_name').value.trim();
+                      if (!last_name) {
+                          this.errors.last_name = 'El apellido es obligatorio.';
+                          hasError = true;
+                      }
+                      
+                      const specialty = document.getElementById('specialty').value;
+                      if (!specialty) {
+                          this.errors.specialty = 'La especialidad médica es obligatoria.';
+                          hasError = true;
+                      }
+                      
+                      const email = document.getElementById('email').value.trim();
+                      if (!email) {
+                          this.errors.email = 'El correo electrónico es obligatorio.';
+                          hasError = true;
+                      } else if (!email.includes('@')) {
+                          this.errors.email = 'El correo electrónico debe ser una dirección válida.';
+                          hasError = true;
+                      }
+                      
+                      const password = document.getElementById('password').value;
+                      if (!password) {
+                          this.errors.password = 'La contraseña es obligatoria.';
+                          hasError = true;
+                      } else if (password.length < 6) {
+                          this.errors.password = 'La contraseña debe tener al menos 6 caracteres.';
+                          hasError = true;
+                      }
+                      
+                      const confirm = document.getElementById('password_confirmation').value;
+                      if (password && password !== confirm) {
+                          this.errors.password = 'Las contraseñas no coinciden.';
+                          hasError = true;
+                      }
+                      
+                      if (hasError) {
+                          e.preventDefault();
+                      }
+                  }
+              }"
+              @submit="validateForm($event)"
+              class="p-8 space-y-4">
             @csrf
             
             <div class="text-center mb-6">
@@ -68,13 +125,14 @@
                            class="w-full bg-transparent border-0 border-b border-slate-200 px-0 py-2 focus:ring-0 focus:border-primary text-base placeholder-slate-300 transition-colors" 
                            placeholder="Carlos">
                     <div class="min-h-[22px] mt-1">
-                        @error('first_name')
-                            <span class="text-xs text-slate-900 font-semibold block leading-tight">{{ $message }}</span>
-                        @else
-                            @if(old('first_name') === null && $errors->any())
-                                <span class="text-xs text-slate-900 font-semibold block leading-tight">El nombre es obligatorio.</span>
-                            @endif
-                        @enderror
+                        <span x-show="errors.first_name" class="text-xs text-slate-900 font-semibold block leading-tight" x-text="errors.first_name" x-cloak></span>
+                        <template x-if="!errors.first_name">
+                            <div>
+                                @error('first_name')
+                                    <span class="text-xs text-slate-900 font-semibold block leading-tight">{{ $message }}</span>
+                                @enderror
+                            </div>
+                        </template>
                     </div>
                 </div>
 
@@ -85,13 +143,14 @@
                            class="w-full bg-transparent border-0 border-b border-slate-200 px-0 py-2 focus:ring-0 focus:border-primary text-base placeholder-slate-300 transition-colors" 
                            placeholder="Mendoza">
                     <div class="min-h-[22px] mt-1">
-                        @error('last_name')
-                            <span class="text-xs text-slate-900 font-semibold block leading-tight">{{ $message }}</span>
-                        @else
-                            @if(old('last_name') === null && $errors->any())
-                                <span class="text-xs text-slate-900 font-semibold block leading-tight">El apellido es obligatorio.</span>
-                            @endif
-                        @enderror
+                        <span x-show="errors.last_name" class="text-xs text-slate-900 font-semibold block leading-tight" x-text="errors.last_name" x-cloak></span>
+                        <template x-if="!errors.last_name">
+                            <div>
+                                @error('last_name')
+                                    <span class="text-xs text-slate-900 font-semibold block leading-tight">{{ $message }}</span>
+                                @enderror
+                            </div>
+                        </template>
                     </div>
                 </div>
             </div>
@@ -110,9 +169,14 @@
                     <option value="Oftalmología" {{ old('specialty') == 'Oftalmología' ? 'selected' : '' }}>Oftalmología</option>
                 </select>
                 <div class="min-h-[22px] mt-1">
-                    @error('specialty')
-                        <span class="text-xs text-slate-900 font-semibold block leading-tight">{{ $message }}</span>
-                    @enderror
+                    <span x-show="errors.specialty" class="text-xs text-slate-900 font-semibold block leading-tight" x-text="errors.specialty" x-cloak></span>
+                    <template x-if="!errors.specialty">
+                        <div>
+                            @error('specialty')
+                                <span class="text-xs text-slate-900 font-semibold block leading-tight">{{ $message }}</span>
+                            @enderror
+                        </div>
+                    </template>
                 </div>
             </div>
 
@@ -123,18 +187,19 @@
                        class="w-full bg-transparent border-0 border-b border-slate-200 px-0 py-2 focus:ring-0 focus:border-primary text-base placeholder-slate-300 transition-colors" 
                        placeholder="carlos@webcitasys.com">
                 <div class="min-h-[22px] mt-1">
-                    @error('email')
-                        <span class="text-xs text-slate-900 font-semibold block leading-tight">{{ $message }}</span>
-                    @else
-                        @if(old('email') === null && $errors->any())
-                            <span class="text-xs text-slate-900 font-semibold block leading-tight">El correo electrónico es obligatorio.</span>
-                        @endif
-                    @enderror
+                    <span x-show="errors.email" class="text-xs text-slate-900 font-semibold block leading-tight" x-text="errors.email" x-cloak></span>
+                    <template x-if="!errors.email">
+                        <div>
+                            @error('email')
+                                <span class="text-xs text-slate-900 font-semibold block leading-tight">{{ $message }}</span>
+                            @enderror
+                        </div>
+                    </template>
                 </div>
             </div>
 
             <!-- Passwords Row with Alpine toggles -->
-            <div class="grid grid-cols-2 gap-6" x-data="{ showPass: false, showConfirm: false }">
+            <div class="grid grid-cols-2 gap-6">
                 <!-- Password -->
                 <div class="space-y-1">
                     <label for="password" class="block text-[11px] font-extrabold uppercase tracking-wider text-slate-800">Contraseña</label>
@@ -147,13 +212,14 @@
                         </button>
                     </div>
                     <div class="min-h-[22px] mt-1">
-                        @error('password')
-                            <span class="text-xs text-slate-900 font-semibold block leading-tight">{{ $message }}</span>
-                        @else
-                            @if($errors->any())
-                                <span class="text-xs text-slate-900 font-semibold block leading-tight">La contraseña es obligatoria.</span>
-                            @endif
-                        @enderror
+                        <span x-show="errors.password" class="text-xs text-slate-900 font-semibold block leading-tight" x-text="errors.password" x-cloak></span>
+                        <template x-if="!errors.password">
+                            <div>
+                                @error('password')
+                                    <span class="text-xs text-slate-900 font-semibold block leading-tight">{{ $message }}</span>
+                                @enderror
+                            </div>
+                        </template>
                     </div>
                 </div>
 

@@ -79,4 +79,43 @@ class AuthController extends Controller
         $request->session()->regenerateToken();
         return redirect()->route('login');
     }
+
+    public function showForgotPassword()
+    {
+        return view('auth.forgot-password');
+    }
+
+    public function forgotPassword(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email|exists:users,email',
+        ], [
+            'email.exists' => 'El correo electrónico no está registrado en nuestro sistema.',
+        ]);
+
+        return redirect()->route('password.reset', ['email' => $request->email]);
+    }
+
+    public function showResetPassword(Request $request)
+    {
+        $email = $request->email;
+        return view('auth.reset-password', compact('email'));
+    }
+
+    public function resetPassword(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email|exists:users,email',
+            'password' => 'required|string|min:6|confirmed',
+        ]);
+
+        $user = User::where('email', $request->email)->first();
+        if ($user) {
+            $user->password = Hash::make($request->password);
+            $user->save();
+            return redirect()->route('login')->with('success', 'Contraseña restablecida con éxito. Ya puedes iniciar sesión.');
+        }
+
+        return back()->withErrors(['email' => 'No se pudo restablecer la contraseña.']);
+    }
 }

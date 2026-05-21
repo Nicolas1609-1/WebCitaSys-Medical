@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8"/>
     <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-    <title>Iniciar Sesión - WebCitaSys</title>
+    <title>Recuperar Contraseña - WebCitaSys</title>
     
     <!-- Material Symbols -->
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
@@ -43,21 +43,20 @@
             <div class="absolute inset-0 bg-gradient-to-tr from-primary/10 to-transparent opacity-50"></div>
             <div class="relative z-10">
                 <div class="w-16 h-16 bg-primary-container text-white rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg border border-primary/20">
-                    <span class="material-symbols-outlined text-4xl">local_hospital</span>
+                    <span class="material-symbols-outlined text-4xl">lock_reset</span>
                 </div>
                 <h1 class="text-2xl font-bold tracking-tight font-display" style="font-family: 'Hanken Grotesk', sans-serif;">WebCitaSys</h1>
-                <p class="text-slate-300 text-sm mt-1">Medical Management System</p>
+                <p class="text-slate-300 text-sm mt-1">Recuperación de Contraseña</p>
             </div>
         </div>
 
         <!-- Form Section -->
-        <form action="{{ route('login') }}" method="POST" novalidate
+        <form action="{{ route('password.email') }}" method="POST" novalidate
               x-data="{
-                  errors: { email: '', password: '' },
-                  showPass: false,
+                  errors: { email: '' },
                   validateForm(e) {
                       let hasError = false;
-                      this.errors = { email: '', password: '' };
+                      this.errors = { email: '' };
                       
                       const email = document.getElementById('email').value.trim();
                       if (!email) {
@@ -65,12 +64,6 @@
                           hasError = true;
                       } else if (!email.includes('@')) {
                           this.errors.email = 'El correo electrónico debe ser una dirección válida.';
-                          hasError = true;
-                      }
-                      
-                      const password = document.getElementById('password').value;
-                      if (!password) {
-                          this.errors.password = 'La contraseña es obligatoria.';
                           hasError = true;
                       }
                       
@@ -83,16 +76,9 @@
               class="p-8 space-y-5">
             @csrf
             
-            @if(session('success'))
-                <div class="bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs rounded-xl p-3.5 flex items-start gap-2.5 mb-2 shadow-sm">
-                    <span class="material-symbols-outlined text-emerald-600 text-lg">check_circle</span>
-                    <span class="font-medium leading-tight">{{ session('success') }}</span>
-                </div>
-            @endif
-            
             <div class="text-center mb-6">
-                <h2 class="text-xl font-bold text-slate-800" style="font-family: 'Hanken Grotesk', sans-serif;">Acceso al Panel Médico</h2>
-                <p class="text-slate-500 text-xs mt-1">Ingresa tus credenciales para acceder al sistema.</p>
+                <h2 class="text-xl font-bold text-slate-800" style="font-family: 'Hanken Grotesk', sans-serif;">¿Olvidaste tu contraseña?</h2>
+                <p class="text-slate-500 text-xs mt-1">Ingresa tu correo electrónico registrado y te permitiremos restablecer tu acceso.</p>
             </div>
 
             <!-- Email Field -->
@@ -111,52 +97,19 @@
                         </div>
                     </template>
                 </div>
-                <p class="text-[11px] text-slate-400">Prueba con: <span class="font-bold text-primary">doctor@webcitasys.com</span></p>
-            </div>
-
-            <!-- Password Field -->
-            <div class="space-y-1">
-                <label for="password" class="block text-[11px] font-extrabold uppercase tracking-wider text-slate-800">Contraseña</label>
-                <div class="relative">
-                    <input :type="showPass ? 'text' : 'password'" name="password" id="password" required 
-                           class="w-full bg-transparent border-0 border-b border-slate-200 pl-0 pr-8 py-2 focus:ring-0 focus:border-primary text-base placeholder-slate-300 transition-colors" 
-                           placeholder="••••••••">
-                    <button type="button" @click="showPass = !showPass" class="absolute right-0 top-2.5 text-slate-400 hover:text-slate-600">
-                        <span class="material-symbols-outlined text-xl" x-text="showPass ? 'visibility' : 'visibility_off'"></span>
-                    </button>
-                </div>
-                <div class="min-h-[22px] mt-1">
-                    <span x-show="errors.password" class="text-xs text-slate-900 font-semibold block leading-tight" x-text="errors.password" x-cloak></span>
-                    <template x-if="!errors.password">
-                        <div>
-                            @error('password')
-                                <span class="text-xs text-slate-900 font-semibold block leading-tight">{{ $message }}</span>
-                            @enderror
-                        </div>
-                    </template>
-                </div>
-                <p class="text-[11px] text-slate-400">Contraseña de prueba: <span class="font-bold text-primary">password</span></p>
-            </div>
-
-            <!-- Remember Me -->
-            <div class="flex items-center justify-between text-sm pt-2">
-                <label class="flex items-center gap-2 text-slate-600 cursor-pointer select-none">
-                    <input type="checkbox" name="remember" class="rounded text-primary focus:ring-primary/20 border-slate-300">
-                    Recordarme
-                </label>
-                <a href="{{ route('password.request') }}" class="text-primary font-semibold hover:underline">¿Olvidaste tu contraseña?</a>
             </div>
 
             <!-- Submit Button -->
-            <button type="submit" class="w-full bg-primary hover:bg-primary-container text-white py-3 rounded-xl font-bold transition-all shadow-md active:scale-[0.99] flex items-center justify-center gap-2 mt-4">
-                <span class="material-symbols-outlined text-lg">login</span>
-                Iniciar Sesión
+            <button type="submit" class="w-full bg-primary hover:bg-primary-container text-white py-3 rounded-xl font-bold transition-all shadow-md active:scale-[0.99] flex items-center justify-center gap-2 mt-2">
+                <span class="material-symbols-outlined text-lg">arrow_forward</span>
+                Verificar Correo
             </button>
 
-            <!-- Registration Link -->
+            <!-- Back to Login Link -->
             <p class="text-center text-sm text-slate-600 pt-2">
-                ¿No tienes una cuenta médica? 
-                <a href="{{ route('register') }}" class="text-primary font-bold hover:underline">Regístrate aquí</a>
+                <a href="{{ route('login') }}" class="text-primary font-bold hover:underline flex items-center justify-center gap-1">
+                    <span class="material-symbols-outlined text-sm">arrow_back</span> Volver a Iniciar Sesión
+                </a>
             </p>
         </form>
 

@@ -130,6 +130,7 @@
             grid-template-columns: repeat(12, 1fr);
             gap: 24px;
         }
+        [x-cloak] { display: none !important; }
     </style>
     
     <!-- Alpine JS for Micro-Interactivity -->
@@ -210,16 +211,130 @@
             </div>
             
             <div class="flex items-center gap-6">
-                <!-- Search bar (Web) -->
-                <form action="{{ route('patients.index') }}" method="GET" class="hidden lg:flex items-center bg-surface-container-low px-4 py-1.5 rounded-full gap-2 border border-outline-variant/40">
-                    <span class="material-symbols-outlined text-outline" data-icon="search">search</span>
-                    <input name="search" class="bg-transparent border-none focus:ring-0 text-sm w-64" placeholder="Buscar paciente por cédula o nombre..." type="text"/>
-                </form>
-                
-                <!-- Notifications icon -->
-                <div class="relative cursor-pointer">
-                    <span class="material-symbols-outlined text-on-surface-variant">notifications</span>
-                    <span class="absolute -top-1 -right-1 w-4 h-4 bg-error text-white text-[9px] flex items-center justify-center rounded-full font-bold">2</span>
+                <!-- Notifications Component -->
+                <div class="relative" 
+                     x-data="{ 
+                         openNotifications: false, 
+                         notifications: [],
+                         init() {
+                             const stored = localStorage.getItem('webcitasys_notifications');
+                             if (stored) {
+                                 this.notifications = JSON.parse(stored);
+                             } else {
+                                 this.notifications = [
+                                     {
+                                         id: 1,
+                                         type: 'cita',
+                                         title: 'Nueva Cita Agendada',
+                                         text: 'El paciente Carlos Mendoza agendó para mañana a las 09:00 AM.',
+                                         time: 'Hace 10 minutos',
+                                         read: false
+                                     },
+                                     {
+                                         id: 2,
+                                         type: 'urgente',
+                                         title: 'Diagnóstico Pendiente',
+                                         text: 'La atención de juan Duarte requiere validación de diagnóstico completo.',
+                                         time: 'Hace 2 horas',
+                                         read: false
+                                     }
+                                 ];
+                                 this.save();
+                             }
+                         },
+                         save() {
+                             localStorage.setItem('webcitasys_notifications', JSON.stringify(this.notifications));
+                         },
+                         get badgeCount() {
+                             return this.notifications.filter(n => !n.read).length;
+                         },
+                         markAllAsRead() {
+                             this.notifications.forEach(n => n.read = true);
+                             this.save();
+                         },
+                         deleteNotification(id) {
+                             this.notifications = this.notifications.filter(n => n.id !== id);
+                             this.save();
+                         },
+                         clearAll() {
+                             this.notifications = [];
+                             this.save();
+                         }
+                     }">
+                    <button @click="openNotifications = !openNotifications" class="relative cursor-pointer focus:outline-none flex items-center justify-center p-1.5 rounded-full hover:bg-slate-100 transition-colors">
+                        <span class="material-symbols-outlined text-on-surface-variant text-[26px]">notifications</span>
+                        <span x-show="badgeCount > 0" x-text="badgeCount" class="absolute top-1 right-1 w-4 h-4 bg-error text-white text-[9px] flex items-center justify-center rounded-full font-bold"></span>
+                    </button>
+                    
+                    <!-- Dropdown Panel -->
+                    <div x-show="openNotifications" 
+                         @click.outside="openNotifications = false"
+                         x-transition:enter="transition ease-out duration-150"
+                         x-transition:enter-start="opacity-0 scale-95"
+                         x-transition:enter-end="opacity-100 scale-100"
+                         x-transition:leave="transition ease-in duration-100"
+                         x-transition:leave-start="opacity-100 scale-100"
+                         x-transition:leave-end="opacity-0 scale-95"
+                         class="absolute right-0 mt-2 w-80 bg-white rounded-xl shadow-xl border border-slate-100 py-2 z-50 overflow-hidden"
+                         x-cloak>
+                        
+                        <div class="px-4 py-2 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+                            <span class="font-bold text-slate-800 text-sm">Notificaciones</span>
+                            <div class="flex gap-2">
+                                <button x-show="badgeCount > 0" @click="markAllAsRead()" class="text-xs font-bold text-primary hover:underline">Leer todas</button>
+                                <span x-show="badgeCount > 0 && notifications.length > 0" class="text-slate-300 text-xs">•</span>
+                                <button x-show="notifications.length > 0" @click="clearAll()" class="text-xs font-bold text-red-600 hover:underline">Borrar todas</button>
+                            </div>
+                        </div>
+                        
+                        <div class="max-h-[300px] overflow-y-auto divide-y divide-slate-50">
+                            <!-- Empty State -->
+                            <template x-if="notifications.length === 0">
+                                <div class="p-8 text-center flex flex-col items-center justify-center">
+                                    <div class="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center mb-2.5">
+                                        <span class="material-symbols-outlined text-2xl">check_circle</span>
+                                    </div>
+                                    <p class="text-xs font-bold text-slate-700">¡Al día!</p>
+                                    <p class="text-[11px] text-slate-400 mt-0.5">No tienes notificaciones pendientes.</p>
+                                </div>
+                            </template>
+
+                            <!-- Notification list -->
+                            <template x-for="n in notifications" :key="n.id">
+                                <div class="p-3.5 hover:bg-slate-50/70 transition-colors flex gap-3 text-left relative group"
+                                     :class="n.read ? 'opacity-60 bg-white' : 'bg-blue-50/20'">
+                                    
+                                    <!-- Notification Icon -->
+                                    <div class="w-8 h-8 rounded-full flex items-center justify-center shrink-0 mt-0.5"
+                                         :class="n.type === 'cita' ? 'bg-blue-50 text-blue-600' : 'bg-amber-50 text-amber-600'">
+                                        <span class="material-symbols-outlined text-base" x-text="n.type === 'cita' ? 'event_note' : 'warning'"></span>
+                                    </div>
+                                    
+                                    <!-- Notification Content -->
+                                    <div class="flex-1 min-w-0 pr-4">
+                                        <p class="text-xs font-bold text-slate-800 leading-normal" x-text="n.title"></p>
+                                        <p class="text-[11px] text-slate-500 mt-0.5 leading-normal" x-text="n.text"></p>
+                                        <div class="flex items-center gap-2 mt-1">
+                                            <p class="text-[9px] text-slate-400 font-semibold" x-text="n.time"></p>
+                                            <span x-show="!n.read" class="w-1.5 h-1.5 bg-blue-600 rounded-full"></span>
+                                        </div>
+                                    </div>
+
+                                    <!-- Delete Button -->
+                                    <button @click="deleteNotification(n.id)" 
+                                            class="absolute right-2 top-3 text-slate-300 hover:text-red-600 rounded p-1 transition-colors focus:outline-none"
+                                            title="Eliminar notificación">
+                                        <span class="material-symbols-outlined text-sm">close</span>
+                                    </button>
+                                </div>
+                            </template>
+                        </div>
+                        
+                        <!-- Footer -->
+                        <div class="px-4 py-2 border-t border-slate-100 text-center bg-slate-50/30">
+                            <span class="text-xs text-slate-400 font-semibold">Fin de notificaciones</span>
+                        </div>
+                    </div>
                 </div>
                 
                 <!-- User Profile Photo/Initial -->
