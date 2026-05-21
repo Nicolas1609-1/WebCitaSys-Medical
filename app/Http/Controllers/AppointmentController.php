@@ -42,6 +42,18 @@ class AppointmentController extends Controller
         // Combinar fecha y hora
         $dateTime = Carbon::parse($request->appointment_date . ' ' . $request->appointment_time);
 
+        // Validar conflicto de agenda para el mismo médico a la misma hora
+        $conflict = Appointment::where('doctor_id', $request->doctor_id)
+            ->where('appointment_date', $dateTime)
+            ->where('status', '!=', 'Cancelada')
+            ->exists();
+
+        if ($conflict) {
+            return redirect()->back()
+                ->withInput()
+                ->withErrors(['appointment_time' => 'El médico seleccionado ya tiene una cita reservada a esta hora.']);
+        }
+
         Appointment::create([
             'patient_id' => $request->patient_id,
             'doctor_id' => $request->doctor_id,

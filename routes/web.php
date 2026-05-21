@@ -12,8 +12,11 @@ use App\Models\ClinicalRecord;
 
 // Redirección inicial
 Route::get('/', function () {
-    return redirect()->route('dashboard');
-});
+    if (auth()->check()) {
+        return redirect()->route('dashboard');
+    }
+    return view('welcome');
+})->name('welcome');
 
 // Rutas de Autenticación (Públicas)
 Route::middleware('guest')->group(function () {

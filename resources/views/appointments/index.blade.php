@@ -100,6 +100,9 @@
                     </select>
                     <div class="min-h-[22px] mt-1">
                         <span x-show="errors.patient_id" class="text-xs text-slate-900 font-semibold block leading-tight" x-text="errors.patient_id" x-cloak></span>
+                        @error('patient_id')
+                            <span class="text-xs text-red-600 font-semibold block leading-tight">{{ $message }}</span>
+                        @enderror
                     </div>
                 </div>
                 
@@ -115,6 +118,9 @@
                     </select>
                     <div class="min-h-[22px] mt-1">
                         <span x-show="errors.doctor_id" class="text-xs text-slate-900 font-semibold block leading-tight" x-text="errors.doctor_id" x-cloak></span>
+                        @error('doctor_id')
+                            <span class="text-xs text-red-600 font-semibold block leading-tight">{{ $message }}</span>
+                        @enderror
                     </div>
                 </div>
 
@@ -126,6 +132,9 @@
                                class="w-full px-3 py-1.5 border border-slate-200 rounded-xl focus:ring-primary/20 focus:border-primary text-sm">
                         <div class="min-h-[22px] mt-1">
                             <span x-show="errors.appointment_date" class="text-xs text-slate-900 font-semibold block leading-tight" x-text="errors.appointment_date" x-cloak></span>
+                            @error('appointment_date')
+                                <span class="text-xs text-red-600 font-semibold block leading-tight">{{ $message }}</span>
+                            @enderror
                         </div>
                     </div>
                     
@@ -154,6 +163,9 @@
                         </select>
                         <div class="min-h-[22px] mt-1">
                             <span x-show="errors.appointment_time" class="text-xs text-slate-900 font-semibold block leading-tight" x-text="errors.appointment_time" x-cloak></span>
+                            @error('appointment_time')
+                                <span class="text-xs text-red-600 font-semibold block leading-tight">{{ $message }}</span>
+                            @enderror
                         </div>
                     </div>
                 </div>
@@ -166,6 +178,9 @@
                            placeholder="Ej. Chequeo general de hipertensión">
                     <div class="min-h-[22px] mt-1">
                         <span x-show="errors.reason" class="text-xs text-slate-900 font-semibold block leading-tight" x-text="errors.reason" x-cloak></span>
+                        @error('reason')
+                            <span class="text-xs text-red-600 font-semibold block leading-tight">{{ $message }}</span>
+                        @enderror
                     </div>
                 </div>
 
