@@ -37,6 +37,14 @@ class Patient extends Model
         return $this->hasMany(ClinicalRecord::class)->orderBy('record_date', 'desc');
     }
 
+    public function nextAppointment()
+    {
+        return $this->hasOne(Appointment::class)
+            ->whereIn('status', ['Pendiente', 'Confirmada'])
+            ->whereDate('appointment_date', '>=', now())
+            ->orderBy('appointment_date', 'asc');
+    }
+
     // Accesor para nombre completo
     public function getFullNameAttribute()
     {

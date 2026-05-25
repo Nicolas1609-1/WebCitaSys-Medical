@@ -7,11 +7,16 @@ use App\Models\ClinicalRecord;
 use App\Models\Patient;
 use App\Models\Doctor;
 use App\Models\Appointment;
+use App\Services\AuditService;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
 
 class ClinicalHistoryController extends Controller
 {
+    public function __construct(
+        private AuditService $auditService
+    ) {}
+
     public function create(Request $request)
     {
         $patientId = $request->input('patient_id');
@@ -27,9 +32,18 @@ class ClinicalHistoryController extends Controller
             $selectedPatient = Patient::findOrFail($patientId);
         }
 
-        // Si no hay médico logueado, tomamos el primer médico para el formulario
         $doctors = Doctor::orderBy('last_name', 'asc')->get();
         $patients = Patient::orderBy('last_name', 'asc')->get();
+
+        // Si es doctor, solo mostrar sus pacientes
+        if (Auth::user()->isDoctor() && Auth::user()->doctor) {
+            $doctorId = Auth::user()->doctor->id;
+            $patients = Patient::whereHas('appointments', function ($q) use ($doctorId) {
+                $q->where('doctor_id', $doctorId);
+            })->orWhereHas('clinicalRecords', function ($q) use ($doctorId) {
+                $q->where('doctor_id', $doctorId);
+            })->orderBy('last_name', 'asc')->get();
+        }
 
         return view('history.create', compact('selectedPatient', 'selectedAppointment', 'doctors', 'patients'));
     }
@@ -51,7 +65,6 @@ class ClinicalHistoryController extends Controller
             'prescription' => 'nullable|string',
         ]);
 
-        // Registrar la atención médica
         $record = ClinicalRecord::create([
             'patient_id' => $request->patient_id,
             'doctor_id' => $request->doctor_id,
@@ -68,13 +81,14 @@ class ClinicalHistoryController extends Controller
             'prescription' => $request->prescription,
         ]);
 
-        // Si esta atención está vinculada a una cita, marcarla como completada
         if ($request->appointment_id) {
             $appointment = Appointment::find($request->appointment_id);
             if ($appointment) {
                 $appointment->update(['status' => 'Completada']);
             }
         }
+
+        $this->auditService->logCreated('clinical_records', $record, "Atención registrada para {$record->patient?->full_name} por " . Auth::user()->name);
 
         return redirect()->route('patients.show', $request->patient_id)
                          ->with('success', 'Atención registrada y guardada en el Historial Clínico.');

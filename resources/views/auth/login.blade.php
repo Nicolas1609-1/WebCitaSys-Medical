@@ -158,6 +158,12 @@
                 ¿No tienes una cuenta médica? 
                 <a href="{{ route('register') }}" class="text-primary font-bold hover:underline">Regístrate aquí</a>
             </p>
+
+            <!-- Patient Portal Link -->
+            <div class="mt-4 pt-4 border-t border-slate-100 text-center">
+                <p class="text-xs text-slate-500">¿Eres paciente?</p>
+                <a href="{{ route('patient.login') }}" class="text-primary font-bold hover:underline text-sm">Ingresa al Portal del Paciente</a>
+            </div>
         </form>
 
     </div>

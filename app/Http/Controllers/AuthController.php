@@ -6,10 +6,16 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\User;
 use App\Models\Doctor;
+use App\Models\Role;
+use App\Services\AuditService;
 use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
 {
+    public function __construct(
+        private AuditService $auditService
+    ) {}
+
     public function showLogin()
     {
         if (Auth::check()) {
@@ -26,7 +32,18 @@ class AuthController extends Controller
         ]);
 
         if (Auth::attempt($credentials, $request->boolean('remember'))) {
+            $user = Auth::user();
+
+            if ($user->role?->slug === 'patient') {
+                Auth::logout();
+                $request->session()->invalidate();
+                return redirect()->route('patient.login')->withErrors([
+                    'email' => 'Los pacientes deben iniciar sesión desde el portal de pacientes.',
+                ]);
+            }
+
             $request->session()->regenerate();
+            $this->auditService->logLogin();
             return redirect()->intended(route('dashboard'));
         }
 
@@ -53,10 +70,14 @@ class AuthController extends Controller
             'password' => 'required|string|min:6|confirmed',
         ]);
 
+        $doctorRole = Role::where('slug', 'doctor')->first();
+        $roleId = $doctorRole?->id;
+
         $user = User::create([
             'name' => 'Dr. ' . $request->first_name . ' ' . $request->last_name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
+            'role_id' => $roleId,
         ]);
 
         Doctor::create([
@@ -64,7 +85,7 @@ class AuthController extends Controller
             'first_name' => $request->first_name,
             'last_name' => $request->last_name,
             'specialty' => $request->specialty,
-            'email' => $request->email
+            'email' => $request->email,
         ]);
 
         Auth::login($user);
@@ -74,6 +95,7 @@ class AuthController extends Controller
 
     public function logout(Request $request)
     {
+        $this->auditService->logLogout();
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
