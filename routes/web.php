@@ -79,3 +79,6 @@ Route::middleware('auth')->group(function () {
         return view('reports.index', compact('totalPatients', 'totalAppointments', 'statusCounts', 'specialtyCounts'));
     })->name('reports.index');
 });
+
+
+// Mi comentario de prueba
