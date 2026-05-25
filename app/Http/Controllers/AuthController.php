@@ -65,28 +65,35 @@ class AuthController extends Controller
         $request->validate([
             'first_name' => 'required|string|max:255',
             'last_name' => 'required|string|max:255',
-            'specialty' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
+            'role_slug' => 'required|string|exists:roles,slug',
+            'specialty' => 'required_if:role_slug,doctor|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users|ends_with:@webcitasys.com',
             'password' => 'required|string|min:6|confirmed',
+        ], [
+            'email.ends_with' => 'Solo se permite el registro con correos institucionales @webcitasys.com.',
+            'role_slug.required' => 'Debes seleccionar un cargo.',
+            'specialty.required_if' => 'La especialidad es obligatoria para médicos.',
         ]);
 
-        $doctorRole = Role::where('slug', 'doctor')->first();
-        $roleId = $doctorRole?->id;
+        $role = Role::where('slug', $request->role_slug)->firstOrFail();
 
+        $namePrefix = $request->role_slug === 'doctor' ? 'Dr. ' : '';
         $user = User::create([
-            'name' => 'Dr. ' . $request->first_name . ' ' . $request->last_name,
+            'name' => $namePrefix . $request->first_name . ' ' . $request->last_name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
-            'role_id' => $roleId,
+            'role_id' => $role->id,
         ]);
 
-        Doctor::create([
-            'user_id' => $user->id,
-            'first_name' => $request->first_name,
-            'last_name' => $request->last_name,
-            'specialty' => $request->specialty,
-            'email' => $request->email,
-        ]);
+        if ($request->role_slug === 'doctor') {
+            Doctor::create([
+                'user_id' => $user->id,
+                'first_name' => $request->first_name,
+                'last_name' => $request->last_name,
+                'specialty' => $request->specialty,
+                'email' => $request->email,
+            ]);
+        }
 
         Auth::login($user);
 
