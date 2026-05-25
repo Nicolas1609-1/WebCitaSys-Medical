@@ -155,32 +155,28 @@
             </div>
 
             <div class="flex items-center gap-6">
-                <!-- Notifications Component -->
+                @php
+                    $notifications = Auth::check()
+                        ? \App\Models\Notification::where('user_id', Auth::id())
+                            ->latest()
+                            ->take(10)
+                            ->get()
+                        : collect();
+                    $unreadCount = $notifications->whereNull('read_at')->count();
+                @endphp
                 <div class="relative"
                      x-data="{
                          openNotifications: false,
-                         notifications: [],
-                         init() {
-                             const stored = localStorage.getItem('webcitasys_notifications');
-                             if (stored) {
-                                 this.notifications = JSON.parse(stored);
-                             } else {
-                                 this.notifications = [
-                                     { id: 1, type: 'cita', title: 'Nueva Cita Agendada', text: 'El paciente Carlos Mendoza agendó para mañana a las 09:00 AM.', time: 'Hace 10 minutos', read: false },
-                                     { id: 2, type: 'urgente', title: 'Diagnóstico Pendiente', text: 'La atención de Juan Duarte requiere validación de diagnóstico completo.', time: 'Hace 2 horas', read: false }
-                                 ];
-                                 this.save();
-                             }
-                         },
-                         save() { localStorage.setItem('webcitasys_notifications', JSON.stringify(this.notifications)); },
-                         get badgeCount() { return this.notifications.filter(n => !n.read).length; },
-                         markAllAsRead() { this.notifications.forEach(n => n.read = true); this.save(); },
-                         deleteNotification(id) { this.notifications = this.notifications.filter(n => n.id !== id); this.save(); },
-                         clearAll() { this.notifications = []; this.save(); }
+                         markAllRead() {
+                             fetch('{{ route('notifications.read-all') }}', { method: 'POST', headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' } })
+                                 .then(() => { this.$refs.badge.remove(); document.querySelectorAll('[data-unread]').forEach(el => el.remove()); });
+                         }
                      }">
                     <button @click="openNotifications = !openNotifications" class="relative cursor-pointer focus:outline-none flex items-center justify-center p-1.5 rounded-full hover:bg-slate-100 transition-colors">
                         <span class="material-symbols-outlined text-on-surface-variant text-[26px]">notifications</span>
-                        <span x-show="badgeCount > 0" x-text="badgeCount" class="absolute top-1 right-1 w-4 h-4 bg-error text-white text-[9px] flex items-center justify-center rounded-full font-bold"></span>
+                        @if($unreadCount > 0)
+                        <span x-ref="badge" class="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] bg-error text-white text-[10px] flex items-center justify-center rounded-full font-bold px-1">{{ $unreadCount }}</span>
+                        @endif
                     </button>
 
                     <div x-show="openNotifications"
@@ -196,45 +192,40 @@
 
                         <div class="px-4 py-2 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
                             <span class="font-bold text-slate-800 text-sm">Notificaciones</span>
-                            <div class="flex gap-2">
-                                <button x-show="badgeCount > 0" @click="markAllAsRead()" class="text-xs font-bold text-primary hover:underline">Leer todas</button>
-                                <span x-show="badgeCount > 0 && notifications.length > 0" class="text-slate-300 text-xs">•</span>
-                                <button x-show="notifications.length > 0" @click="clearAll()" class="text-xs font-bold text-red-600 hover:underline">Borrar todas</button>
-                            </div>
+                            @if($unreadCount > 0)
+                            <button @click="markAllRead()" class="text-xs font-bold text-primary hover:underline">Marcar todas leídas</button>
+                            @endif
                         </div>
 
-                        <div class="max-h-[300px] overflow-y-auto divide-y divide-slate-50">
-                            <template x-if="notifications.length === 0">
-                                <div class="p-8 text-center flex flex-col items-center justify-center">
-                                    <div class="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center mb-2.5">
-                                        <span class="material-symbols-outlined text-2xl">check_circle</span>
-                                    </div>
-                                    <p class="text-xs font-bold text-slate-700">¡Al día!</p>
-                                    <p class="text-[11px] text-slate-400 mt-0.5">No tienes notificaciones pendientes.</p>
+                        <div class="max-h-[350px] overflow-y-auto divide-y divide-slate-50">
+                            @forelse($notifications as $n)
+                            <div class="p-3.5 hover:bg-slate-50/70 transition-colors flex gap-3 text-left relative group {{ $n->read_at ? 'opacity-60' : 'bg-blue-50/20' }}">
+                                <div class="w-8 h-8 rounded-full flex items-center justify-center shrink-0 mt-0.5
+                                    {{ $n->type === 'appointment' ? 'bg-blue-50 text-blue-600' : ($n->type === 'clinical' ? 'bg-emerald-50 text-emerald-600' : 'bg-amber-50 text-amber-600') }}">
+                                    <span class="material-symbols-outlined text-base">
+                                        {{ $n->type === 'appointment' ? 'event_note' : ($n->type === 'clinical' ? 'stethoscope' : 'notifications') }}
+                                    </span>
                                 </div>
-                            </template>
-
-                            <template x-for="n in notifications" :key="n.id">
-                                <div class="p-3.5 hover:bg-slate-50/70 transition-colors flex gap-3 text-left relative group"
-                                     :class="n.read ? 'opacity-60 bg-white' : 'bg-blue-50/20'">
-                                    <div class="w-8 h-8 rounded-full flex items-center justify-center shrink-0 mt-0.5"
-                                         :class="n.type === 'cita' ? 'bg-blue-50 text-blue-600' : 'bg-amber-50 text-amber-600'">
-                                        <span class="material-symbols-outlined text-base" x-text="n.type === 'cita' ? 'event_note' : 'warning'"></span>
+                                <div class="flex-1 min-w-0 pr-4">
+                                    <p class="text-xs font-bold text-slate-800 leading-normal">{{ $n->title }}</p>
+                                    <p class="text-[11px] text-slate-500 mt-0.5 leading-normal">{{ $n->message }}</p>
+                                    <div class="flex items-center gap-2 mt-1">
+                                        <p class="text-[9px] text-slate-400 font-semibold">{{ $n->created_at->diffForHumans() }}</p>
+                                        @unless($n->read_at)
+                                        <span class="w-1.5 h-1.5 bg-blue-600 rounded-full" data-unread></span>
+                                        @endunless
                                     </div>
-                                    <div class="flex-1 min-w-0 pr-4">
-                                        <p class="text-xs font-bold text-slate-800 leading-normal" x-text="n.title"></p>
-                                        <p class="text-[11px] text-slate-500 mt-0.5 leading-normal" x-text="n.text"></p>
-                                        <div class="flex items-center gap-2 mt-1">
-                                            <p class="text-[9px] text-slate-400 font-semibold" x-text="n.time"></p>
-                                            <span x-show="!n.read" class="w-1.5 h-1.5 bg-blue-600 rounded-full"></span>
-                                        </div>
-                                    </div>
-                                    <button @click="deleteNotification(n.id)"
-                                            class="absolute right-2 top-3 text-slate-300 hover:text-red-600 rounded p-1 transition-colors focus:outline-none">
-                                        <span class="material-symbols-outlined text-sm">close</span>
-                                    </button>
                                 </div>
-                            </template>
+                            </div>
+                            @empty
+                            <div class="p-8 text-center flex flex-col items-center justify-center">
+                                <div class="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center mb-2.5">
+                                    <span class="material-symbols-outlined text-2xl">check_circle</span>
+                                </div>
+                                <p class="text-xs font-bold text-slate-700">¡Al día!</p>
+                                <p class="text-[11px] text-slate-400 mt-0.5">No tienes notificaciones pendientes.</p>
+                            </div>
+                            @endforelse
                         </div>
 
                         <div class="px-4 py-2 border-t border-slate-100 text-center bg-slate-50/30">

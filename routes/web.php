@@ -142,6 +142,14 @@ Route::middleware('auth')->group(function () {
         })->name('system.index');
     });
 
+    // ==================== NOTIFICACIONES ====================
+    Route::post('/notificaciones/leer-todas', function () {
+        \App\Models\Notification::where('user_id', Auth::id())
+            ->whereNull('read_at')
+            ->update(['read_at' => now()]);
+        return response()->json(['success' => true]);
+    })->name('notifications.read-all');
+
     // ==================== CONSULTAS DE PACIENTE (Auto-servicio) ====================
     Route::middleware('role:patient')->group(function () {
         Route::get('/mis-citas', function () {
@@ -151,8 +159,34 @@ Route::middleware('auth')->group(function () {
                 ->with('doctor')
                 ->orderBy('appointment_date', 'desc')
                 ->paginate(10);
-            return view('patient.appointments.index', compact('appointments'));
+            $doctors = Doctor::orderBy('last_name')->get();
+            return view('patient.appointments.index', compact('appointments', 'doctors'));
         })->name('patient.appointments');
+
+        Route::post('/mis-citas/agendar', function (Illuminate\Http\Request $request) {
+            $validated = $request->validate([
+                'doctor_id' => 'required|exists:doctors,id',
+                'appointment_date' => 'required|date|after:now',
+                'reason' => 'required|string|max:500',
+            ]);
+
+            $patient = Auth::user()->patient;
+
+            if (!$patient) {
+                return back()->withErrors(['error' => 'Perfil de paciente no encontrado.']);
+            }
+
+            Appointment::create([
+                'patient_id' => $patient->id,
+                'doctor_id' => $validated['doctor_id'],
+                'appointment_date' => $validated['appointment_date'],
+                'reason' => $validated['reason'],
+                'status' => 'Pendiente',
+            ]);
+
+            return redirect()->route('patient.appointments')
+                ->with('success', 'Cita agendada exitosamente. Espera la confirmación.');
+        })->name('patient.appointments.store');
 
         Route::get('/mi-historial', function () {
             $user = Auth::user();

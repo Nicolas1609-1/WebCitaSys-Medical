@@ -52,7 +52,7 @@
         <div class="flex justify-between items-start">
             <div>
                 <p class="text-on-surface-variant font-semibold tracking-wider text-xs uppercase mb-1">Notificaciones</p>
-                <h3 class="text-3xl font-bold font-display text-slate-800">{{ $notificationsCount }}</h3>
+                <h3 class="text-3xl font-bold font-display text-slate-800">{{ \App\Models\Notification::where('user_id', Auth::id())->whereNull('read_at')->count() }}</h3>
                 <p class="text-xs text-slate-500 mt-1">sin leer</p>
             </div>
             <div class="p-3 bg-sky-50 rounded-xl text-sky-600">
@@ -198,28 +198,6 @@
                 </div>
                 @empty
                 <div class="p-6 text-center text-slate-400 text-sm">No hay próximas citas pendientes.</div>
-                @endforelse
-            </div>
-        </div>
-
-        <div class="glass-card bg-white rounded-xl overflow-hidden shadow-sm">
-            <div class="p-6 border-b border-outline-variant/30 bg-slate-50/50">
-                <h4 class="text-lg font-bold text-slate-800 flex items-center gap-2">
-                    <span class="material-symbols-outlined text-primary">notifications</span>
-                    Notificaciones
-                </h4>
-            </div>
-            <div class="divide-y divide-slate-100">
-                @forelse($notifications as $notification)
-                <div class="p-3 hover:bg-slate-50 transition-colors">
-                    <p class="text-sm text-slate-700">{{ $notification->message }}</p>
-                    <p class="text-xs text-slate-400 mt-1">{{ $notification->created_at->diffForHumans() }}</p>
-                </div>
-                @empty
-                <div class="p-6 text-center text-slate-400 text-sm">
-                    <span class="material-symbols-outlined text-3xl text-slate-300 mb-1">notifications_off</span>
-                    <p class="text-sm">No tienes notificaciones.</p>
-                </div>
                 @endforelse
             </div>
         </div>

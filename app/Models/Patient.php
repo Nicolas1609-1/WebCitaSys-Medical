@@ -11,6 +11,7 @@ class Patient extends Model
     use HasFactory;
 
     protected $fillable = [
+        'user_id',
         'first_name',
         'last_name',
         'document_type',
@@ -20,7 +21,7 @@ class Patient extends Model
         'birth_date',
         'gender',
         'blood_type',
-        'address'
+        'address',
     ];
 
     protected $casts = [

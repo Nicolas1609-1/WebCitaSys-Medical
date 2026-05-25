@@ -224,7 +224,6 @@ class DemoDataSeeder extends Seeder
         ClinicalRecord::create([
             'patient_id' => $patientCarlos->id,
             'doctor_id' => $doctorLopez->id,
-            'appointment_id' => 3,
             'record_date' => Carbon::today()->setHour(11)->setMinute(30),
             'weight' => '78',
             'height' => '174',
@@ -250,6 +249,208 @@ class DemoDataSeeder extends Seeder
             'diagnosis' => 'Hipertensión arterial estadio 1 en observación.',
             'treatment' => 'Reducir consumo de sal, realizar ejercicio cardiovascular regular.',
             'prescription' => 'Enalapril 10mg - Tomar 1 tableta cada 24 horas por 60 días.'
+        ]);
+
+        // ==================== DATOS ADICIONALES DR. MENDOZA (doctor@webcitasys.com) ====================
+        // Citas adicionales hoy
+        Appointment::create([
+            'patient_id' => $patientJuan->id,
+            'doctor_id' => $doctorMendoza->id,
+            'appointment_date' => Carbon::today()->setHour(8)->setMinute(0),
+            'reason' => 'Control de hipertensión mensual',
+            'status' => 'Completada',
+            'notes' => 'Paciente estable. Presión 120/80.'
+        ]);
+
+        Appointment::create([
+            'patient_id' => $patientMaria->id,
+            'doctor_id' => $doctorMendoza->id,
+            'appointment_date' => Carbon::today()->setHour(9)->setMinute(30),
+            'reason' => 'Dolor torácico recurrente',
+            'status' => 'Pendiente',
+            'notes' => 'Paciente refiere dolor en pecho desde hace 2 semanas.'
+        ]);
+
+        Appointment::create([
+            'patient_id' => $patientAna->id,
+            'doctor_id' => $doctorMendoza->id,
+            'appointment_date' => Carbon::today()->setHour(11)->setMinute(0),
+            'reason' => 'Control de arritmia cardiaca',
+            'status' => 'Confirmada',
+            'notes' => 'Traer resultados de holter.'
+        ]);
+
+        // Citas próximos días
+        Appointment::create([
+            'patient_id' => $patientJuan->id,
+            'doctor_id' => $doctorMendoza->id,
+            'appointment_date' => Carbon::tomorrow()->setHour(10)->setMinute(0),
+            'reason' => 'Consulta de seguimiento cardiovascular',
+            'status' => 'Confirmada',
+            'notes' => 'Evaluar resultados de exámenes de sangre.'
+        ]);
+
+        Appointment::create([
+            'patient_id' => $patientCarlos->id,
+            'doctor_id' => $doctorMendoza->id,
+            'appointment_date' => Carbon::tomorrow()->setHour(14)->setMinute(30),
+            'reason' => 'Evaluación pre-operatoria',
+            'status' => 'Pendiente',
+            'notes' => 'Paciente será sometido a cirugía de rodilla.'
+        ]);
+
+        Appointment::create([
+            'patient_id' => $patientMaria->id,
+            'doctor_id' => $doctorMendoza->id,
+            'appointment_date' => Carbon::today()->addDays(2)->setHour(9)->setMinute(0),
+            'reason' => 'Resultados de ecocardiograma',
+            'status' => 'Confirmada',
+            'notes' => 'Entregar y explicar resultados.'
+        ]);
+
+        Appointment::create([
+            'patient_id' => $patientAna->id,
+            'doctor_id' => $doctorMendoza->id,
+            'appointment_date' => Carbon::today()->addDays(3)->setHour(11)->setMinute(30),
+            'reason' => 'Control de medicación anticoagulante',
+            'status' => 'Pendiente',
+            'notes' => 'Revisar INR y ajustar dosis.'
+        ]);
+
+        Appointment::create([
+            'patient_id' => $patientPedro->id,
+            'doctor_id' => $doctorMendoza->id,
+            'appointment_date' => Carbon::today()->addDays(5)->setHour(8)->setMinute(30),
+            'reason' => 'Control cardiológico rutinario',
+            'status' => 'Confirmada',
+            'notes' => 'Ayuno de 8 horas requerido.'
+        ]);
+
+        // ==================== REGISTROS CLÍNICOS ADICIONALES DR. MENDOZA ====================
+        ClinicalRecord::create([
+            'patient_id' => $patientJuan->id,
+            'doctor_id' => $doctorMendoza->id,
+            'record_date' => Carbon::today()->setHour(8)->setMinute(30),
+            'weight' => '83',
+            'height' => '178',
+            'temperature' => '36.5',
+            'blood_pressure' => '118/78',
+            'heart_rate' => '76',
+            'symptoms' => 'Paciente asintomático, control de rutina.',
+            'diagnosis' => 'Hipertensión controlada. Paciente estable.',
+            'treatment' => 'Continuar tratamiento actual. Mantener dieta baja en sodio.',
+            'prescription' => 'Enalapril 10mg - Continuar 1 tableta cada 24 horas por 90 días.'
+        ]);
+
+        ClinicalRecord::create([
+            'patient_id' => $patientCarlos->id,
+            'doctor_id' => $doctorMendoza->id,
+            'record_date' => Carbon::today()->setHour(10)->setMinute(0),
+            'weight' => '76',
+            'height' => '175',
+            'temperature' => '36.6',
+            'blood_pressure' => '122/82',
+            'heart_rate' => '78',
+            'symptoms' => 'Somnolencia diurna, ronquidos nocturnos intensos.',
+            'diagnosis' => 'Apnea obstructiva del sueño probable. Se solicita polisomnografía.',
+            'treatment' => 'Derivar a neumología para estudio de sueño.',
+            'prescription' => 'Educación sobre higiene del sueño.'
+        ]);
+
+        ClinicalRecord::create([
+            'patient_id' => $patientAna->id,
+            'doctor_id' => $doctorMendoza->id,
+            'record_date' => Carbon::yesterday()->setHour(16)->setMinute(0),
+            'weight' => '62',
+            'height' => '165',
+            'temperature' => '36.8',
+            'blood_pressure' => '110/70',
+            'heart_rate' => '72',
+            'symptoms' => 'Palpitaciones ocasionales, sensación de vacío en el pecho.',
+            'diagnosis' => 'Extrasístoles ventriculares benignas en contexto de ansiedad.',
+            'treatment' => 'Manejo del estrés. Reducción de cafeína.',
+            'prescription' => 'Propranolol 10mg - Tomar 1 tableta cada 12 horas por 30 días si hay síntomas.',
+        ]);
+
+        ClinicalRecord::create([
+            'patient_id' => $patientPedro->id,
+            'doctor_id' => $doctorMendoza->id,
+            'record_date' => Carbon::today()->subDays(3)->setHour(9)->setMinute(0),
+            'weight' => '70',
+            'height' => '172',
+            'temperature' => '36.4',
+            'blood_pressure' => '125/85',
+            'heart_rate' => '82',
+            'symptoms' => 'Molestia en el pecho al hacer ejercicio.',
+            'diagnosis' => 'Angina de esfuerzo estable. Se solicita prueba de esfuerzo.',
+            'treatment' => 'Restricción de ejercicio intenso hasta resultados.',
+            'prescription' => 'Nitroglicerina sublingual 0.4mg - 1 tableta cada 5 minutos si dolor, máximo 3 dosis.',
+        ]);
+
+        ClinicalRecord::create([
+            'patient_id' => $patientMaria->id,
+            'doctor_id' => $doctorMendoza->id,
+            'record_date' => Carbon::today()->subDays(5)->setHour(11)->setMinute(0),
+            'weight' => '65',
+            'height' => '168',
+            'temperature' => '36.6',
+            'blood_pressure' => '115/75',
+            'heart_rate' => '70',
+            'symptoms' => 'Mareos al levantarse, fatiga general.',
+            'diagnosis' => 'Hipotensión ortostática leve.',
+            'treatment' => 'Aumentar ingesta de líquidos y sal moderada.',
+            'prescription' => 'Hidratación abundante. Control de presión en casa.'
+        ]);
+
+        // ==================== NOTIFICACIONES DR. MENDOZA ====================
+        $userDoctorId = $userDoctor->id;
+
+        \App\Models\Notification::create([
+            'user_id' => $userDoctorId,
+            'type' => 'appointment',
+            'title' => 'Nueva cita asignada',
+            'message' => 'Se ha asignado una nueva cita para el paciente Pedro Sánchez el 24/05/2026 a las 15:00.',
+            'read_at' => null,
+        ]);
+
+        \App\Models\Notification::create([
+            'user_id' => $userDoctorId,
+            'type' => 'system',
+            'title' => 'Recordatorio',
+            'message' => 'Tienes 4 citas programadas para hoy. Revisa tu agenda.',
+            'read_at' => null,
+        ]);
+
+        \App\Models\Notification::create([
+            'user_id' => $userDoctorId,
+            'type' => 'clinical',
+            'title' => 'Resultados de laboratorio',
+            'message' => 'Resultados de exámenes de Juan Pérez están disponibles para revisión.',
+            'read_at' => null,
+        ]);
+
+        \App\Models\Notification::create([
+            'user_id' => $userDoctorId,
+            'type' => 'appointment',
+            'title' => 'Cita completada',
+            'message' => 'La consulta con Carlos Ramírez ha sido marcada como completada.',
+            'read_at' => null,
+        ]);
+
+        \App\Models\Notification::create([
+            'user_id' => $userDoctorId,
+            'type' => 'system',
+            'title' => 'Actualización de agenda',
+            'message' => 'Se ha añadido una nueva cita para el 26/05/2026 con Ana Martínez a las 11:30.',
+            'read_at' => Carbon::now()->subHours(2),
+        ]);
+
+        \App\Models\Notification::create([
+            'user_id' => $userDoctorId,
+            'type' => 'system',
+            'title' => 'Bienvenido',
+            'message' => 'Bienvenido al panel médico de WebCitaSys. Revisa tu agenda del día.',
+            'read_at' => null,
         ]);
     }
 }

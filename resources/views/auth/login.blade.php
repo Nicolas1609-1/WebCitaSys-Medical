@@ -111,7 +111,7 @@
                         </div>
                     </template>
                 </div>
-                <p class="text-[11px] text-slate-400">Prueba con: <span class="font-bold text-primary">doctor@webcitasys.com</span></p>
+
             </div>
 
             <!-- Password Field -->
@@ -135,7 +135,7 @@
                         </div>
                     </template>
                 </div>
-                <p class="text-[11px] text-slate-400">Contraseña de prueba: <span class="font-bold text-primary">password</span></p>
+
             </div>
 
             <!-- Remember Me -->

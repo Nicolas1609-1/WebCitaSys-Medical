@@ -121,20 +121,11 @@ class DashboardController extends Controller
             ->whereMonth('record_date', Carbon::now()->month)->count();
         $completedTodayCount = $completedAppointments->count();
 
-        $notifications = \App\Models\Notification::where('user_id', Auth::id())
-            ->unread()
-            ->latest()
-            ->take(5)
-            ->get();
-        $notificationsCount = \App\Models\Notification::where('user_id', Auth::id())
-            ->unread()
-            ->count();
-
         return view('dashboards.doctor', compact(
             'todayAppointments', 'nextAppointments', 'completedAppointments',
-            'recentRecords', 'recentPatients', 'notifications',
+            'recentRecords', 'recentPatients',
             'todayCount', 'pendingCount', 'upcomingCount', 'monthlyCount',
-            'completedTodayCount', 'notificationsCount', 'doctor'
+            'completedTodayCount', 'doctor'
         ));
     }
 
