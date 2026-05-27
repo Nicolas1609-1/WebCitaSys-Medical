@@ -35,7 +35,8 @@
     <!-- Main Grid split: Agendar Form (Left) vs Daily Agenda (Right) -->
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         
-        <!-- Left Panel: Agendar Cita Form (4 cols) -->
+        <!-- Left Panel: Agendar Cita Form (4 cols) - Solo recepcionistas y admins -->
+        @can('appointments.create')
         <div class="col-span-12 lg:col-span-4 glass-card bg-white rounded-xl p-6 shadow-sm border border-slate-100 relative overflow-hidden">
             <!-- Top bar indicator -->
             <div class="absolute top-0 left-0 w-full h-2 bg-primary"></div>
@@ -199,9 +200,10 @@
                 </button>
             </form>
         </div>
+        @endcan
         
-        <!-- Right Panel: Daily Appointments Agenda (8 cols) -->
-        <div class="col-span-12 lg:col-span-8 glass-card bg-white rounded-xl p-6 shadow-sm">
+        <!-- Right Panel: Daily Appointments Agenda (8 cols, 12 si no hay form) -->
+        <div class="col-span-12 {{ Auth::user()->hasPermission('appointments.create') ? 'lg:col-span-8' : 'lg:col-span-12' }} glass-card bg-white rounded-xl p-6 shadow-sm">
             <h3 class="text-base font-bold text-slate-800 pb-3 border-b border-slate-100 mb-6 flex items-center gap-2">
                 <span class="material-symbols-outlined text-primary">view_agenda</span>
                 Cronograma del Día Seleccionado
@@ -286,6 +288,7 @@
                                                     </form>
                                                 @endif
 
+                                                @can('appointments.cancel')
                                                 <!-- Cancelar -->
                                                 <form action="{{ route('appointments.updateStatus', $appt->id) }}" method="POST" class="w-full">
                                                     @csrf
@@ -295,6 +298,7 @@
                                                         Cancelar
                                                     </button>
                                                 </form>
+                                                @endcan
                                             </div>
                                         </div>
                                     </div>

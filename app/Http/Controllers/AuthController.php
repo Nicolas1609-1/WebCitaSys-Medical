@@ -6,10 +6,16 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\User;
 use App\Models\Doctor;
+use App\Models\Role;
+use App\Services\AuditService;
 use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
 {
+    public function __construct(
+        private AuditService $auditService
+    ) {}
+
     public function showLogin()
     {
         if (Auth::check()) {
@@ -26,7 +32,18 @@ class AuthController extends Controller
         ]);
 
         if (Auth::attempt($credentials, $request->boolean('remember'))) {
+            $user = Auth::user();
+
+            if ($user->role?->slug === 'patient') {
+                Auth::logout();
+                $request->session()->invalidate();
+                return redirect()->route('patient.login')->withErrors([
+                    'email' => 'Los pacientes deben iniciar sesión desde el portal de pacientes.',
+                ]);
+            }
+
             $request->session()->regenerate();
+            $this->auditService->logLogin();
             return redirect()->intended(route('dashboard'));
         }
 
@@ -48,24 +65,35 @@ class AuthController extends Controller
         $request->validate([
             'first_name' => 'required|string|max:255',
             'last_name' => 'required|string|max:255',
-            'specialty' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
+            'role_slug' => 'required|string|exists:roles,slug',
+            'specialty' => 'required_if:role_slug,doctor|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users|ends_with:@webcitasys.com',
             'password' => 'required|string|min:6|confirmed',
+        ], [
+            'email.ends_with' => 'Solo se permite el registro con correos institucionales @webcitasys.com.',
+            'role_slug.required' => 'Debes seleccionar un cargo.',
+            'specialty.required_if' => 'La especialidad es obligatoria para médicos.',
         ]);
 
+        $role = Role::where('slug', $request->role_slug)->firstOrFail();
+
+        $namePrefix = $request->role_slug === 'doctor' ? 'Dr. ' : '';
         $user = User::create([
-            'name' => 'Dr. ' . $request->first_name . ' ' . $request->last_name,
+            'name' => $namePrefix . $request->first_name . ' ' . $request->last_name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
+            'role_id' => $role->id,
         ]);
 
-        Doctor::create([
-            'user_id' => $user->id,
-            'first_name' => $request->first_name,
-            'last_name' => $request->last_name,
-            'specialty' => $request->specialty,
-            'email' => $request->email
-        ]);
+        if ($request->role_slug === 'doctor') {
+            Doctor::create([
+                'user_id' => $user->id,
+                'first_name' => $request->first_name,
+                'last_name' => $request->last_name,
+                'specialty' => $request->specialty,
+                'email' => $request->email,
+            ]);
+        }
 
         Auth::login($user);
 
@@ -74,6 +102,7 @@ class AuthController extends Controller
 
     public function logout(Request $request)
     {
+        $this->auditService->logLogout();
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();

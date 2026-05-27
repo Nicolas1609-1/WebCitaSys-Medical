@@ -11,6 +11,7 @@ class Patient extends Model
     use HasFactory;
 
     protected $fillable = [
+        'user_id',
         'first_name',
         'last_name',
         'document_type',
@@ -20,7 +21,7 @@ class Patient extends Model
         'birth_date',
         'gender',
         'blood_type',
-        'address'
+        'address',
     ];
 
     protected $casts = [
@@ -35,6 +36,14 @@ class Patient extends Model
     public function clinicalRecords()
     {
         return $this->hasMany(ClinicalRecord::class)->orderBy('record_date', 'desc');
+    }
+
+    public function nextAppointment()
+    {
+        return $this->hasOne(Appointment::class)
+            ->whereIn('status', ['Pendiente', 'Confirmada'])
+            ->whereDate('appointment_date', '>=', now())
+            ->orderBy('appointment_date', 'asc');
     }
 
     // Accesor para nombre completo

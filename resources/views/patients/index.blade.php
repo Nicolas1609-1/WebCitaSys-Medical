@@ -68,6 +68,12 @@
                                     <div>
                                         <p class="font-bold text-slate-800">{{ $patient->full_name }}</p>
                                         <p class="text-xs text-slate-400">Registrado el {{ $patient->created_at->format('d/m/Y') }}</p>
+                                        @if($patient->nextAppointment)
+                                        <p class="text-xs font-bold text-primary mt-0.5 flex items-center gap-1">
+                                            <span class="material-symbols-outlined text-[12px]">schedule</span>
+                                            Próx. cita: {{ $patient->nextAppointment->appointment_date->format('d/m/Y H:i') }}
+                                        </p>
+                                        @endif
                                     </div>
                                 </div>
                             </td>
