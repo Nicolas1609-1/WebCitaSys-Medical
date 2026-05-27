@@ -66,7 +66,7 @@ class AuthController extends Controller
             'first_name' => 'required|string|max:255',
             'last_name' => 'required|string|max:255',
             'role_slug' => 'required|string|exists:roles,slug',
-            'specialty' => 'required_if:role_slug,doctor|string|max:255',
+            'specialty' => 'nullable|required_if:role_slug,doctor|string|max:255',
             'email' => 'required|string|email|max:255|unique:users|ends_with:@webcitasys.com',
             'password' => 'required|string|min:6|confirmed',
         ], [
